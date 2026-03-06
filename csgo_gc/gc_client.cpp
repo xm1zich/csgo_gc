@@ -239,7 +239,7 @@ void ClientGC::BuildClientWelcome(CMsgClientWelcome &message, const CMsgCStrike1
     message.mutable_location()->set_country("US");
     message.set_game_data2(matchmakingHello.SerializeAsString());
     message.set_rtime32_gc_welcome_timestamp(static_cast<uint32_t>(time(nullptr)));
-    message.set_currency(39); // USD
+    message.set_currency(1); // USD
     message.set_txn_country_code("US");
 }
 
