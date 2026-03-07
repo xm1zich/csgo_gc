@@ -125,9 +125,10 @@ jobs:
             sleep 10s
 
             gh release create "$TAG" --repo "$REPO" \
-              --title "Continuous Build" \
+              --title "Github Actions build" \
               --notes "$SHA" \
-              --target "$SHA"
+              --target "$SHA" \
+              --draft
 
             gh release upload "$TAG" --repo "$REPO" "${files[@]}" --clobber
           fi
