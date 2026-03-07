@@ -116,10 +116,15 @@
 		{
 			"custom_format"		"single"
 		}
+		"20189"
+		{
+			"custom_format"		"coupon"
+			"w"		"2.611001"
+		}
 		"20190"
 		{
 			"custom_format"		"coupon"
-			"w"		"2.610888"
+			"w"		"2.610001"
 		}
 		"20187"
 		{
