@@ -188,6 +188,20 @@ ItemSchema::ItemSchema()
     {
         ParseRevolvingLootLists(revolvingLootListsKey);
     }
+
+    // using for activating passes, where you got medal after activation
+    {
+        KeyValue passesKey{ "passes" };
+
+        if (passesKey.ParseFromFile("csgo_gc/passes.txt"))
+        {
+            ParsePasses(&passesKey);
+        }
+        else
+        {
+            assert(false);
+        }
+    }
 }
 
 float ItemSchema::AttributeFloat(const CSOEconItemAttribute *attribute) const
@@ -394,7 +408,18 @@ const LootList *ItemSchema::GetCrateLootList(uint32_t crateDefIndex) const
         return nullptr;
     }
 
-    assert(itemSearch->second.m_supplyCrateSeries);
+    // self opening purchases fix
+    if (itemSearch->second.m_lootListName.size())
+    {
+        const auto lootListSearch = m_lootLists.find(itemSearch->second.m_lootListName);
+        if (lootListSearch == m_lootLists.end())
+        {
+            assert(false);
+            return nullptr;
+        }
+
+        return &lootListSearch->second;
+    }
 
     auto lootListSearch = m_revolvingLootLists.find(itemSearch->second.m_supplyCrateSeries);
     if (lootListSearch == m_revolvingLootLists.end())
@@ -424,9 +449,10 @@ bool ItemSchema::CreateItemFromLootListItem(Random &random,
     {
         item.set_quality(ItemSchema::QualityStrange);
     }
-    else
+    else if (lootListItem.quality != ItemSchema::QualityUnusual)
     {
-        item.set_quality(lootListItem.quality);
+        // if not a unusual, make it unique
+        item.set_quality(ItemSchema::QualityUnique);
     }
 
     // rarity override
@@ -482,7 +508,9 @@ bool ItemSchema::CreateItemFromLootListItem(Random &random,
         // mikkotodo how does the float distribution work?
         attribute = item.add_attribute();
         attribute->set_def_index(ItemSchema::AttributeTextureWear);
-        SetAttributeFloat(attribute, random.Float(paintKitInfo->m_minFloat, paintKitInfo->m_maxFloat));
+
+        float itemFloat = GetConfig().RandomizeFloat() ? random.Float(paintKitInfo->m_minFloat, paintKitInfo->m_maxFloat) : 0;
+        SetAttributeFloat(attribute, itemFloat);
     }
     else if (lootListItem.type == LootListItemNoAttribute)
     {
@@ -561,6 +589,22 @@ bool ItemSchema::CreateItem(uint32_t defIndex, ItemOrigin origin, Unacknowledged
     return true;
 }
 
+bool ItemSchema::PassItemsData(KeyValue &itemsData, uint32_t defIndex) const
+{
+    auto passKey = m_passes.find(defIndex);
+    if (passKey == m_passes.end())
+    {
+        return false;
+    }
+    const KeyValue *subkey = passKey->second.GetSubkey("items");
+    if (subkey)
+    {
+        itemsData = *subkey;
+        return true;
+    }
+    return false;
+}
+
 void ItemSchema::ParseItems(const KeyValue *itemsKey, const KeyValue *prefabsKey)
 {
     m_itemInfo.reserve(itemsKey->SubkeyCount());
@@ -582,12 +626,6 @@ void ItemSchema::ParseItems(const KeyValue *itemsKey, const KeyValue *prefabsKey
         auto &itemInfo = emplace.first->second;
         if (!itemInfo.m_isCoupon)
         {
-            // FIXME: self opening purchases
-            if (itemInfo.m_lootListName.size())
-            {
-                Platform::Print("Non coupon item associated loot list in %s!!!\n", itemInfo.m_name.c_str());
-            }
-
             //assert(!itemInfo.m_lootListName.size());
             assert(!itemInfo.m_willProduceStatTrak);
         }
@@ -668,7 +706,7 @@ void ItemSchema::ParseItemRecursive(ItemInfo &info, const KeyValue &itemKey, con
             else
             {
                 // not available to us mortals...
-                Platform::Print("No such prefab '%s'\n", std::string{ prefabName }.c_str());
+                // Platform::Print("No such prefab '%s'\n", std::string{ prefabName }.c_str());
             }
         }
     }
@@ -1021,6 +1059,19 @@ void ItemSchema::ParseRevolvingLootLists(const KeyValue *revolvingLootListsKey)
         }
 
         m_revolvingLootLists.try_emplace(index, it->second);
+    }
+}
+
+void ItemSchema::ParsePasses(const KeyValue *passesListKey)
+{
+    m_passes.reserve(passesListKey->SubkeyCount());
+
+    for (const KeyValue &passKey : *passesListKey)
+    {
+        uint32_t index = FromString<uint32_t>(passKey.Name());
+        assert(index);
+
+        m_passes.try_emplace(index, passKey);
     }
 }
 

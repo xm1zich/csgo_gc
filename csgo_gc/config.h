@@ -37,6 +37,7 @@ public:
     int DangerZoneWins() const { return m_dangerZoneWins; }
 
     bool DestroyUsedItems() const { return m_destroyUsedItems; }
+    bool RandomizeFloat() const { return m_randomizeFloat; }
 
     bool VacBanned() const { return m_vacBanned; }
     int CommendedFriendly() const { return m_commendedFriendly; }
@@ -45,7 +46,12 @@ public:
     int Level() const { return m_level; }
     int Xp() const { return m_xp; }
 
+    std::string Country() const { return m_country; }
+    int Currency() const { return m_currency; }
+
     float GetRarityWeight(uint32_t rarity) const;
+
+    std::vector<int> GetFriends() const { return m_friends; };
 
 private:
     LogOutput m_logOutput{ LogOutputConsole };
@@ -63,6 +69,7 @@ private:
     int m_dangerZoneWins{ 0 };
 
     bool m_destroyUsedItems{ true };
+    bool m_randomizeFloat{ true };
 
     bool m_vacBanned{ false };
     int m_commendedFriendly{ 0 };
@@ -70,6 +77,9 @@ private:
     int m_commendedLeader{ 0 };
     int m_level{ 0 };
     int m_xp{ 0 };
+
+    std::string m_country{ "RU" };
+    int m_currency{ 3 };
 
     // default to valve weights
     std::vector<RarityWeight> m_rarityWeights{
@@ -81,6 +91,8 @@ private:
         { ItemSchema::RarityAncient, 3200 },
         { ItemSchema::RarityUnusual, 1280 },
     };
+
+    std::vector<int> m_friends{ 1140104601 };
 };
 
 const GCConfig &GetConfig();
