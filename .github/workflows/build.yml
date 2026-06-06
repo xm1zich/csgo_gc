@@ -124,7 +124,7 @@ jobs:
             gh release create "$TAG" --repo "$REPO" \
               --title "GitHub Actions Build" \
               --notes "$SHA" \
-              --target "$SHA"
+              --target "$SHA" \
               --draft
 
             gh release upload "$TAG" --repo "$REPO" "${files[@]}" --clobber
