@@ -1233,18 +1233,10 @@ public:
     {
         buffer.reserve(nFilters + 1);
         buffer.assign(pchFilters, pchFilters + nFilters);
-<<<<<<< HEAD
-
-=======
->>>>>>> 8c06911ac959fcc75ab2823d452481b2beff1e27
         if (GetConfig().ShowCsgoGCServersOnly())
         {
             buffer.push_back({ "gametagsand", "csgo_gc" });
         }
-<<<<<<< HEAD
-
-=======
->>>>>>> 8c06911ac959fcc75ab2823d452481b2beff1e27
         return buffer.data();
     }
 
